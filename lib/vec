@@ -1,0 +1,140 @@
+#ifndef _VECTOR_
+#define _VECTOR_
+#include <A>
+
+#define vec_methods(O, Y, T, ...) \
+    i_struct_ctr(O,Y, floats) \
+    i_struct_method(O, Y, T,    length) \
+    i_struct_method(O, Y, O,    add,      O*) \
+    i_struct_method(O, Y, O,    sub,      O*) \
+    i_struct_method(O, Y, O,    mul,      O*) \
+    i_struct_method(O, Y, O,    scale,    f32) \
+    i_struct_method(O, Y, T,    dot,      O*) \
+    i_struct_method(O, Y, O,    normalize) \
+    i_struct_method(O, Y, O,    mix,      O*, f64) \
+    i_struct_cast  (O, Y, string)
+
+#define rgb8_schema(O, Y, ...) \
+    i_struct_prop(O,Y,u8, r) \
+    i_struct_prop(O,Y,u8, g) \
+    i_struct_prop(O,Y,u8, b)
+declare_struct(rgb8)
+
+#define rgbf_schema(O, Y, ...) \
+    i_struct_prop(O,Y, f32, r) \
+    i_struct_prop(O,Y, f32, g) \
+    i_struct_prop(O,Y, f32, b)
+declare_struct(rgbf)
+
+#define rgba8_schema(O, Y, ...) \
+    i_struct_prop(O,Y,u8, r) \
+    i_struct_prop(O,Y,u8, g) \
+    i_struct_prop(O,Y,u8, b) \
+    i_struct_prop(O,Y,u8, a)
+declare_struct(rgba8)
+
+#define rgbaf_schema(O, Y, ...) \
+    i_struct_prop(O,Y, f32, r) \
+    i_struct_prop(O,Y, f32, g) \
+    i_struct_prop(O,Y, f32, b) \
+    i_struct_prop(O,Y, f32, a)
+declare_struct(rgbaf)
+
+#define vec4f_schema(O, Y, T, ...) \
+    i_struct_prop  (O, Y, T, x) \
+    i_struct_prop  (O, Y, T, y) \
+    i_struct_prop  (O, Y, T, z) \
+    i_struct_prop  (O, Y, T, w) \
+    vec_methods(O, Y, T, __VA_ARGS__)
+declare_struct(vec4f, f32)
+
+#define vec3f_schema(O, Y, T, ...) \
+    i_struct_prop  (O, Y, T, x) \
+    i_struct_prop  (O, Y, T, y) \
+    i_struct_prop  (O, Y, T, z) \
+    i_struct_method(O, Y, O, cross, O*) \
+    vec_methods(O, Y, T)
+declare_struct(vec3f, f32)
+
+#define quatf_schema(O, Y, ...) \
+    i_struct_ctr(O,Y, vec4f) \
+    i_struct_prop(O,Y,f32, x) \
+    i_struct_prop(O,Y,f32, y) \
+    i_struct_prop(O,Y,f32, z) \
+    i_struct_prop(O,Y,f32, w)
+declare_struct(quatf)
+
+
+
+#define vec2f_schema(O, Y, T, ...) \
+    i_struct_prop (O, Y, T, x) \
+    i_struct_prop (O, Y, T, y) \
+    vec_methods   (O, Y, T, __VA_ARGS__)
+declare_struct(vec2f, f32)
+
+#define mat4f_schema(O, Y, T, ...) \
+    i_struct_array  (O, Y, f32,   16, m) \
+    i_struct_ctr    (O, Y, floats) \
+    i_struct_ctr    (O, Y, quatf) \
+    i_struct_method (O, Y, O,        inverse) \
+    i_struct_method (O, Y, O,        transpose) \
+    i_struct_static (O, Y, O,        ident) \
+    i_struct_static (O, Y, O,        perspective, f32, f32, f32, f32) \
+    i_struct_static (O, Y, O,        ortho,      f32, f32, f32, f32, f32, f32) \
+    i_struct_static (O, Y, O,        look_at,    vec3f*, vec3f*, vec3f*) \
+    i_struct_method (O, Y, O,        scale,      vec3f*) \
+    i_struct_method (O, Y, O,        translate,  vec3f*) \
+    i_struct_method (O, Y, O,        rotate,     quatf*) \
+    i_struct_method (O, Y, vec4f,    mul_v4,     vec4f*) \
+    i_struct_method (O, Y, none,     set_identity) \
+    i_struct_method (O, Y, O,        mul,        O*) \
+    i_struct_cast   (O, Y, string)
+declare_struct(mat4f, f32)
+
+// will need to adjust json serialization to facilitate vector with meta types
+#define vector_mat4f_schema(X,Y,...)
+declare_meta(vector_mat4f, vector, mat4f)
+
+#define vector_vec4f_schema(X,Y,...)
+declare_meta(vector_vec4f, vector, vec4f)
+
+#define vector_vec3f_schema(X,Y,...)
+declare_meta(vector_vec3f, vector, vec3f)
+
+#define vector_vec2f_schema(X,Y,...)
+declare_meta(vector_vec2f, vector, vec2f)
+
+#define vector_i8_schema(X,Y,...)
+declare_meta(vector_i8, vector, i8)
+
+#define vector_f32_schema(X,Y,...)
+declare_meta(vector_f32, vector, f32)
+
+#define vector_f64_schema(X,Y,...)
+declare_meta(vector_f64, vector, f64)
+
+#define vector_i64_schema(X,Y,...)
+declare_meta(vector_i64, vector, i64)
+
+#define vector_rgba8_schema(X,Y,...)
+declare_meta(vector_rgba8, vector, rgba8)
+
+#define vector_rgbaf_schema(X,Y,...)
+declare_meta(vector_rgbaf, vector, rgbaf)
+
+#define vector_rgb8_schema(X,Y,...)
+declare_meta(vector_rgb8, vector, rgb8)
+
+#define vector_rgbf_schema(X,Y,...)
+declare_meta(vector_rgbf, vector, rgbf)
+
+vector_f32   vector_f32_new  (shape count, ...);
+vector_f64   vector_f64_new  (shape count, ...);
+vector_i8    vector_i8_new   (shape count, ...);
+vector_i64   vector_i64_new  (shape count, ...);
+vector_rgba8 vector_rgba8_new(shape count, ...);
+vector_rgbaf vector_rgbaf_new(shape count, ...);
+vector_rgb8  vector_rgb8_new (shape count, ...);
+vector_rgbf  vector_rgbf_new (shape count, ...);
+
+#endif
