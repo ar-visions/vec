@@ -2,8 +2,10 @@
 #define _VECTOR_
 #include <A>
 
+/// use i_struct_ctr_obj for objects or primitives
+/// use i_struct_ctr for structs.. this is because we cannot separate * from the token
 #define vec_methods(O, Y, T, ...) \
-    i_struct_ctr(O,Y, floats) \
+    i_struct_ctr_obj(O,Y, floats) \
     i_struct_method(O, Y, T,    length) \
     i_struct_method(O, Y, O,    add,      O*) \
     i_struct_method(O, Y, O,    sub,      O*) \
@@ -33,13 +35,6 @@ declare_struct(rgbf)
     i_struct_prop(O,Y,u8, a)
 declare_struct(rgba8)
 
-#define rgbaf_schema(O, Y, ...) \
-    i_struct_prop(O,Y, f32, r) \
-    i_struct_prop(O,Y, f32, g) \
-    i_struct_prop(O,Y, f32, b) \
-    i_struct_prop(O,Y, f32, a)
-declare_struct(rgbaf)
-
 #define vec4f_schema(O, Y, T, ...) \
     i_struct_prop  (O, Y, T, x) \
     i_struct_prop  (O, Y, T, y) \
@@ -47,6 +42,14 @@ declare_struct(rgbaf)
     i_struct_prop  (O, Y, T, w) \
     vec_methods(O, Y, T, __VA_ARGS__)
 declare_struct(vec4f, f32)
+
+#define rgbaf_schema(O, Y, ...) \
+    i_struct_ctr(O,Y, vec4f) \
+    i_struct_prop(O,Y, f32, r) \
+    i_struct_prop(O,Y, f32, g) \
+    i_struct_prop(O,Y, f32, b) \
+    i_struct_prop(O,Y, f32, a)
+declare_struct(rgbaf)
 
 #define vec3f_schema(O, Y, T, ...) \
     i_struct_prop  (O, Y, T, x) \
@@ -64,7 +67,8 @@ declare_struct(vec3f, f32)
     i_struct_prop(O,Y,f32, w)
 declare_struct(quatf)
 
-
+f32 degrees(f32 rads);
+f32 radians(f32 degs);
 
 #define vec2f_schema(O, Y, T, ...) \
     i_struct_prop (O, Y, T, x) \
@@ -74,7 +78,7 @@ declare_struct(vec2f, f32)
 
 #define mat4f_schema(O, Y, T, ...) \
     i_struct_array  (O, Y, f32,   16, m) \
-    i_struct_ctr    (O, Y, floats) \
+    i_struct_ctr_obj(O, Y, floats) \
     i_struct_ctr    (O, Y, quatf) \
     i_struct_method (O, Y, O,        inverse) \
     i_struct_method (O, Y, O,        transpose) \

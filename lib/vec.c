@@ -18,28 +18,28 @@
         return result; \
     } \
     N N##_scale(N* a, f32 n) { \
-        N res; \
+        N res = *a; \
         T* src = a, *f = &res.x; \
         for (int i = 0; i < C; i++) \
             f[i] = src[i] * n; \
         return res; \
     } \
     N N##_add(N* a, N* b) { \
-        N res; \
+        N res = *a; \
         T* src = a, *src2 = b, *f = &res.x; \
         for (int i = 0; i < C; i++) \
             f[i] = src[i] + src2[i]; \
         return res; \
     } \
     N N##_sub(N* a, N* b) { \
-        N res; \
+        N res = *a; \
         T*  src = a, *src2 = b, *f = &res.x; \
         for (int i = 0; i < C; i++) \
             f[i] = src[i] - src2[i]; \
         return res; \
     } \
     N N##_mul(N* a, N* b) { \
-        N res; \
+        N res = *a; \
         T*  src = a, *src2 = b, *f = &res.x; \
         for (int i = 0; i < C; i++) \
             f[i] = src[i] * src2[i]; \
@@ -117,14 +117,8 @@ quatf quatf_with_floats(f32* f) {
     return a;
 }
 
-#define _N_STRUCT_ARGS_1_( TYPE, a) \
-    ({ TYPE instance = _Generic((a), TYPE##_schema(TYPE, GENERICS, object) const void *: (void)0)(a); instance; }) 
-
-#define _N_STRUCT_ARGS_HELPER2_(TYPE, N, ...)  _COMBINE(_N_STRUCT_ARGS_, N)(TYPE, ## __VA_ARGS__)
-#define _N_STRUCT_ARGS_(TYPE,...)    _N_STRUCT_ARGS_HELPER2_(TYPE, _ARG_COUNT(__VA_ARGS__), ## __VA_ARGS__)
-
-#define structure_(TYPE, ...) _N_STRUCT_ARGS_(TYPE, __VA_ARGS__);
-
+f32 degrees(f32 rads) { return rads * (180.0f / M_PI); }
+f32 radians(f32 degs) { return degs * (M_PI / 180.0f); }
 
 vec3f vec3f_cross(vec3f* a, vec3f* b) {
     f32 f[3] = {
@@ -132,7 +126,7 @@ vec3f vec3f_cross(vec3f* a, vec3f* b) {
         a->z * b->x - a->x * b->z,
         a->x * b->y - a->y * b->x
     };
-    vec3f v = structure_(vec3f, (floats)f);
+    vec3f v = vec3f((floats)f);
     return v;
 }
 
@@ -227,12 +221,11 @@ mat4f mat4f_scale(mat4f* a, vec3f* f) {
 
 // any 'shape' in A-type model applies on top of vmember_count
 mat4f mat4f_translate(mat4f* a, vec3f* offsets) {
-    i64 rows = 4;
-    i64 cols = 4;
-    mat4f res;
-    for (u32 i = 0; i < rows - 1; ++i)
-        res.m[i * cols + (cols - 1)] = (&offsets->x)[i];
-    return res;
+    mat4f tr = mat4f_ident();
+    tr.m[12] = offsets->x; // Column-major: m[12] = (3,0)
+    tr.m[13] = offsets->y; // Column-major: m[13] = (3,1)
+    tr.m[14] = offsets->z; // Column-major: m[14] = (3,2)
+    return mat4f_mul(a, &tr);
 }
 
 mat4f mat4f_look_at(vec3f* eye, vec3f* target, vec3f* up) {
@@ -353,36 +346,37 @@ mat4f mat4f_ident() {
     return mat4f((floats)null);
 }
 
-mat4f mat4f_perspective(f32 fov, f32 aspect, f32 near, f32 far) {
-    f32 tan_half_fov = tanf(fov * 0.5f);
-    mat4f res = {};
-    res.m[ 0] = 1.0f / (aspect * tan_half_fov);
-    res.m[ 1] = 0.0f;
-    res.m[ 2] = 0.0f;
-    res.m[ 3] = 0.0f;
+mat4f mat4f_perspective(f32 y_fov, f32 aspect, f32 n, f32 f) {
+	float const ifov = 1.f / tanf(y_fov / 2.f);
+    f32 m[4][4];
+    memset(m, 0, sizeof(m));
+	m[0][0] = ifov / aspect;
+	m[0][1] = 0.f;
+	m[0][2] = 0.f;
+	m[0][3] = 0.f;
 
-    res.m[ 4] = 0.0f;
-    res.m[ 5] = 1.0f / tan_half_fov;
-    res.m[ 6] = 0.0f;
-    res.m[ 7] = 0.0f;
+	m[1][0] = 0.f;
+	m[1][1] = ifov;
+	m[1][2] = 0.f;
+	m[1][3] = 0.f;
 
-    res.m[ 8] = 0.0f;
-    res.m[ 9] = 0.0f;
-    res.m[10] = -(far + near) / (far - near);
-    res.m[11] = -1.0f;
+	m[2][0] = 0.f;
+	m[2][1] = 0.f;
+	m[2][2] = -((f + n) / (f - n));
+	m[2][3] = -1.f;
 
-    res.m[12] = 0.0f;
-    res.m[13] = 0.0f;
-    res.m[14] = -(2.0f * far * near) / (far - near);
-    res.m[15] = 0.0f;
+	m[3][0] = 0.f;
+	m[3][1] = 0.f;
+	m[3][2] = -((2.f * f * n) / (f - n));
+	m[3][3] = 0.f;
+    mat4f res;
+    memcpy(&res, m, sizeof(m));
     return res;
 }
 
 
 mat4f mat4f_rotate(mat4f* mat, quatf* q) {
     mat4f res = {};
-    u32 size = isa(mat)->vmember_count;
-    verify(size == 16, "rotation currently supports only 4x4 matrices");
 
     // quaternion rotation
     f32 x = q->x, y = q->y, z = q->z, w = q->w;
@@ -409,7 +403,7 @@ mat4f mat4f_rotate(mat4f* mat, quatf* q) {
     res.m[13] = 0.0f;
     res.m[14] = 0.0f;
     res.m[15] = 1.0f;
-    return res;
+    return mat4f_mul(mat, &res);
 }
 
 string mat4f_cast_string(mat4f* a) {
@@ -428,28 +422,32 @@ string mat4f_cast_string(mat4f* a) {
 #pragma GCC diagnostic ignored "-Wvarargs"
 
 /// replaces uses of 'sampler'
-#define vector_impl(T) \
+#define vector_impl(T, ARG_T) \
 vector_##T vector_##T##_new(shape vshape, ...) { \
     va_list args; \
     va_start(args, vshape); \
     vector_##T result = vector_##T(shape, vshape); \
     T* T##_data = data(result); \
     for (int i = 0, count = total(vshape); i < count; i++) { \
-        T##_data[i] = va_arg(args, T); \
+        T##_data[i] = (T)va_arg(args, ARG_T); \
     } \
     return result; \
 }
 
 #pragma GCC diagnostic pop
 
-vector_impl(i8)
-vector_impl(i64)
-vector_impl(f32)
-vector_impl(f64)
-vector_impl(rgb8)
-vector_impl(rgbf)
-vector_impl(rgba8)
-vector_impl(rgbaf)
+vector_impl(i8,    i64)
+vector_impl(i64,   i64)
+vector_impl(f32,   f64)
+vector_impl(f64,   f64)
+vector_impl(rgb8,  rgb8)
+vector_impl(rgbf,  rgbf)
+vector_impl(rgba8, rgba8)
+vector_impl(rgbaf, rgbaf)
+
+rgbaf rgbaf_with_vec4f(vec4f* v4) {
+    return *(rgbaf*)v4;
+}
 
 define_struct(rgb8, u8)
 define_vector(rgb8, u8, 3)
