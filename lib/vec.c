@@ -1,5 +1,6 @@
 #include <import>
 #include <math.h>
+#include <linmath.h>
 
 // change for vectors and matrices
 
@@ -120,6 +121,10 @@ quatf quatf_with_floats(f32* f) {
 f32 degrees(f32 rads) { return rads * (180.0f / M_PI); }
 f32 radians(f32 degs) { return degs * (M_PI / 180.0f); }
 
+vec4f vec4f_with_vec3f(vec3f* a) {
+    return vec4f(a->x, a->y, a->z, 1.0);
+}
+
 vec3f vec3f_cross(vec3f* a, vec3f* b) {
     f32 f[3] = {
         a->y * b->z - a->z * b->y,
@@ -128,6 +133,15 @@ vec3f vec3f_cross(vec3f* a, vec3f* b) {
     };
     vec3f v = vec3f((floats)f);
     return v;
+}
+
+vec3f vec3f_rand() {
+    f32 f[3] = {
+        ((float)rand() / RAND_MAX) * 2.0f - 1.0f,
+        ((float)rand() / RAND_MAX) * 2.0f - 1.0f,
+        ((float)rand() / RAND_MAX) * 2.0f - 1.0f
+    };
+    return vec3f_normalize(f);
 }
 
 /// vec4f treated as axis x/y/z + theta (w) args
@@ -229,7 +243,14 @@ mat4f mat4f_translate(mat4f* a, vec3f* offsets) {
 }
 
 mat4f mat4f_look_at(vec3f* eye, vec3f* target, vec3f* up) {
-    vec3f diff    = vec3f_sub(eye, target);
+
+    mat4f res = {};
+    mat4x4_look_at(&res, *(vec3*)eye, *(vec3*)target, *(vec3*)up);
+    return res;
+
+    //LINMATH_H_FUNC void mat4x4_look_at(mat4x4 m, vec3 const eye, vec3 const center, vec3 const up)
+
+    vec3f diff    = vec3f_sub(target, eye);
     vec3f forward = vec3f_normalize(&diff); // Z-axis (points away from target)
     vec3f rcross  = vec3f_cross(up, &forward);
     vec3f right   = vec3f_normalize(&rcross);  // X-axis

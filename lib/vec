@@ -35,7 +35,9 @@ declare_struct(rgbf)
     i_struct_prop(O,Y,u8, a)
 declare_struct(rgba8)
 
+typedef struct _vec3f vec3f;
 #define vec4f_schema(O, Y, T, ...) \
+    i_struct_ctr(O,Y, vec3f) \
     i_struct_prop  (O, Y, T, x) \
     i_struct_prop  (O, Y, T, y) \
     i_struct_prop  (O, Y, T, z) \
@@ -56,6 +58,7 @@ declare_struct(rgbaf)
     i_struct_prop  (O, Y, T, y) \
     i_struct_prop  (O, Y, T, z) \
     i_struct_method(O, Y, O, cross, O*) \
+    i_struct_static(O, Y, O, rand) \
     vec_methods(O, Y, T)
 declare_struct(vec3f, f32)
 
