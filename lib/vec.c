@@ -137,9 +137,9 @@ vec3f vec3f_cross(vec3f* a, vec3f* b) {
 
 vec3f vec3f_rand() {
     f32 f[3] = {
-        ((float)rand() / RAND_MAX) * 2.0f - 1.0f,
-        ((float)rand() / RAND_MAX) * 2.0f - 1.0f,
-        ((float)rand() / RAND_MAX) * 2.0f - 1.0f
+        ((float)rand() / (float)RAND_MAX) * 2.0f - 1.0f,
+        ((float)rand() / (float)RAND_MAX) * 2.0f - 1.0f,
+        ((float)rand() / (float)RAND_MAX) * 2.0f - 1.0f
     };
     return vec3f_normalize(f);
 }

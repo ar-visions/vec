@@ -36,6 +36,7 @@ declare_struct(rgbf)
 declare_struct(rgba8)
 
 typedef struct _vec3f vec3f;
+
 #define vec4f_schema(O, Y, T, ...) \
     i_struct_ctr(O,Y, vec3f) \
     i_struct_prop  (O, Y, T, x) \
