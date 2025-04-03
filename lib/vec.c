@@ -7,7 +7,7 @@
 // vec4f(1, 2, 3, 4)  <- creates a struct literal (vec4f) { args }
 // vec4f(obj)         <- creates a struct and calls conversion with_TYPE
 
-#define vec3f_(...) structure(vec3f __VA_OPT__(,) __VA_ARGS__)
+#define vec3f_(...) structure_of(vec3f __VA_OPT__(,) __VA_ARGS__)
 
 #define vec_define_methods(N, T, C) \
     N N##_with_floats(T* f) { \
@@ -447,13 +447,14 @@ string mat4f_cast_string(mat4f* a) {
 vector_##T vector_##T##_new(shape vshape, ...) { \
     va_list args; \
     va_start(args, vshape); \
-    vector_##T result = vector_##T(shape, vshape); \
+    vector_##T result = vector_##T(); \
+    result->vshape = hold(vshape); \
     T* T##_data = data(result); \
     for (int i = 0, count = total(vshape); i < count; i++) { \
         T##_data[i] = (T)va_arg(args, ARG_T); \
     } \
     return result; \
-}
+} 
 
 #pragma GCC diagnostic pop
 
