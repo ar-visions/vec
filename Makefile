@@ -1,14 +1,14 @@
 PROJECT := vec
 
-# use silver base build system
-ifeq ($(strip $(SILVER_IMPORT)),)
-ifeq ($(wildcard ../silver),)
-$(info required: silver base system ... cloning to ../silver)
-$(shell git clone https://github.com/ar-visions/silver ../silver)
-$(error fetched silver -- please re-run make)
+# compile and use tapestry build system through Makefile in a peer-level project system
+ifeq ($(strip $(TAPESTRY)),)
+ifeq ($(wildcard ../tapestry),)
+$(info required: tapestry build delegate (invoked by Makefile) -- cloning to ../tapestry)
+$(shell git clone https://github.com/ar-visions/tapestry ../tapestry)
+$(error fetched tapestry -- please re-run make)
 else
-$(error SILVER_IMPORT not set)
+TAPESTRY := ../tapestry
 endif
 endif
 
-include $(SILVER_IMPORT)/../base.mk
+include $(TAPESTRY)/bootstrap.mk
