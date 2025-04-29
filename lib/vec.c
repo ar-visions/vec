@@ -203,14 +203,10 @@ none mat4f_set_identity(mat4f* a) {
 
 mat4f mat4f_mul(mat4f* a, mat4f* b) {
     mat4f res = {};
-    int cols_a = 4;
-    int cols_b = 4;
-    // Perform multiplication
     for (i64 i = 0; i < 4; ++i) {
         for (i64 j = 0; j < 4; ++j) {
-            res.m[i * cols_b + j] = 0; // Initialize element
-            for (i64 k = 0; k < cols_a; ++k) {
-                res.m[i * cols_b + j] += a->m[i * cols_a + k] * b->m[k * cols_b + j];
+            for (i64 k = 0; k < 4; ++k) {
+                res.m[j * 4 + i] += a->m[k * 4 + i] * b->m[j * 4 + k];
             }
         }
     }
@@ -219,17 +215,22 @@ mat4f mat4f_mul(mat4f* a, mat4f* b) {
 
 vec4f mat4f_mul_v4(mat4f* a, vec4f* b) {
     vec4f res  = {};
+    
     for (i64 i = 0; i < 4; ++i)
         for (i64 j = 0; j < 4; ++j)
             (&res.x)[i] += a->m[i * 4 + j] * (&b->x)[j];
+    
     return res;
 }
 
 mat4f mat4f_scale(mat4f* a, vec3f* f) {
     u32 size = 4;
     mat4f r = *a;
+
     for (u32 i = 0; i < 3; ++i)
-        r.m[i * (size + 1)] = (&f->x)[i];
+        for (u32 j = 0; j < 4; ++j)
+            r.m[i * 4 + j] *= (&f->x)[i];
+
     return r;
 }
 
