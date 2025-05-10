@@ -499,6 +499,8 @@ define_vector(vec2f, f32, 2)
 define_struct(mat4f, f32)
 define_vector(mat4f, f32, 16)
 
+define_class(rect)
+
 define_meta(vector_rgbf,  vector, rgbf)
 define_meta(vector_rgb8,  vector, rgb8)
 define_meta(vector_rgbaf, vector, rgbaf)

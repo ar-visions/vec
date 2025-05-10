@@ -80,6 +80,13 @@ f32 radians(f32 degs);
     vec_methods   (O, Y, T, __VA_ARGS__)
 declare_struct(vec2f, f32)
 
+#define rect_schema(O, Y, ...) \
+    i_prop (O, Y, public, f32, x) \
+    i_prop (O, Y, public, f32, y) \
+    i_prop (O, Y, public, f32, w) \
+    i_prop (O, Y, public, f32, h)
+declare_class(rect)
+
 #define mat4f_schema(O, Y, T, ...) \
     i_struct_array  (O, Y, f32,   16, m) \
     i_struct_ctr_obj(O, Y, floats) \
