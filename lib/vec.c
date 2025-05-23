@@ -96,6 +96,17 @@ vec_define_methods(vec4f, f32, 4)
 vec_define_methods(vec3f, f32, 3)
 vec_define_methods(vec2f, f32, 2)
 
+vec2f rect_xy(rect a) { return vec2f(a->x, a->y); }
+
+rect rect_from_plots(vec2f v0, vec2f v1) {
+    rect r = rect();
+    r->x = v0.x;
+    r->y = v0.y;
+    r->w = v1.x - v0.x;
+    r->h = v1.y - v0.y;
+    return r;
+}
+
 mat4f mat4f_with_floats(f32* f) {
     mat4f a = {};
     if (f)

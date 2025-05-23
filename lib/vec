@@ -84,7 +84,9 @@ declare_struct(vec2f, f32)
     i_prop (O, Y, public, f32, x) \
     i_prop (O, Y, public, f32, y) \
     i_prop (O, Y, public, f32, w) \
-    i_prop (O, Y, public, f32, h)
+    i_prop (O, Y, public, f32, h) \
+    i_method(O, Y, public, vec2f, xy) \
+    s_method(O, Y, public, rect, from_plots, vec2f, vec2f)
 declare_class(rect)
 
 #define mat4f_schema(O, Y, T, ...) \
