@@ -96,6 +96,88 @@ vec_define_methods(vec4f, f32, 4)
 vec_define_methods(vec3f, f32, 3)
 vec_define_methods(vec2f, f32, 2)
 
+
+
+static u8 nib(char n) {
+    return (n >= '0' && n <= '9') ?       (n - '0')  :
+           (n >= 'a' && n <= 'f') ? (10 + (n - 'a')) :
+           (n >= 'A' && n <= 'F') ? (10 + (n - 'A')) : 0;
+}
+
+
+rgba rgba_with_cstr(rgba a, cstr v) {
+    symbol h = v;
+    a->a = 1.0f;
+
+    if (h[0] == '#') {
+        i32 sz = strlen(v);
+        switch (sz) {
+            case 5:
+                a->a  = (f32)(nib(h[4]) << 4 | nib(h[4])) / 255.0f;
+                [[fallthrough]];
+            case 4:
+                a->r = (f32)(nib(h[1]) << 4 | nib(h[1])) / 255.0f;
+                a->g = (f32)(nib(h[2]) << 4 | nib(h[2])) / 255.0f;
+                a->b = (f32)(nib(h[3]) << 4 | nib(h[3])) / 255.0f;
+                break;
+            case 9:
+                a->a = (f32)(nib(h[7]) << 4 | nib(h[8])) / 255.0f;
+                [[fallthrough]];
+            case 7:
+                a->r  = (f32)(nib(h[1]) << 4 | nib(h[2])) / 255.0f;
+                a->g  = (f32)(nib(h[3]) << 4 | nib(h[4])) / 255.0f;
+                a->b  = (f32)(nib(h[5]) << 4 | nib(h[6])) / 255.0f;
+                break;
+        }
+    } else {
+        static struct { const char* name; u8 r, g, b; } colors[] = {
+            {"black",   0,   0,   0},   {"white", 255, 255, 255},       {"red",     255,   0,   0},
+            {"green",   0, 128,   0},   {"blue",    0,   0, 255},       {"yellow",  255, 255,   0},
+            {"cyan",    0, 255, 255},   {"magenta",255,   0, 255},      {"gray",   128, 128, 128},
+            {"silver",192, 192, 192},   {"maroon",128,   0,   0},       {"olive",  128, 128,   0},
+            {"purple",128,   0, 128},   {"teal",    0, 128, 128},       {"navy",     0,   0, 128},
+            {"orange",255, 165,   0},   {"lime",    0, 255,   0},       {"pink",   255, 192, 203},
+            {"brown", 139,  69,  19},   {"gold",  255, 215,   0},       {"orchid",218, 112, 214},
+            {"salmon",250, 128, 114},   {"plum",  221, 160, 221},       {"beige", 245, 245, 220},
+            {"tan",   210, 180, 140},   {"aqua",    0, 255, 255},       {"coral", 255, 127,  80},
+            {"chocolate",210,105,  30}, {"crimson",220,  20,  60},      {"indigo", 75,   0, 130},
+            {"ivory", 255, 255, 240},   {"khaki", 240, 230, 140},       {"lavender",230,230,250},
+            {"linen", 250, 240, 230},   {"mintcream",245,255,250},      {"mistyrose",255,228,225},
+            {"papayawhip",255,239,213}, {"peachpuff",255,218,185},      {"rosybrown",188,143,143},
+            {"seagreen",46,139,87},     {"seashell",255,245,238},       {"sienna",160,82,45},
+            {"skyblue",135,206,235},    {"slateblue",106,90,205},       {"slategray",112,128,144},
+            {"snow",255,250,250},       {"springgreen",0,255,127},      {"steelblue",70,130,180},
+            {"thistle",216,191,216},    {"tomato",255,99,71},           {"turquoise",64,224,208},
+            {"violet",238,130,238},     {"wheat",245,222,179},          {"whitesmoke",245,245,245},
+            {"yellowgreen",154,205,50}, {"rebeccapurple",102,51,153},   {"mediumblue",0,0,205},
+            {"darkgreen",0,100,0},      {"firebrick",178,34,34},        {"darkorange",255,140,0}
+        };
+        for (int i = 0; i < sizeof(colors)/sizeof(colors[0]); i++) {
+            if (colors[i].name[0] == v[0] && strcmp(&v[1], &colors[i].name[1]) == 0) {
+                a->r = colors[i].r / 255.0f;
+                a->g = colors[i].g / 255.0f;
+                a->b = colors[i].b / 255.0f;
+                break;
+            }
+        }
+    }
+    return a;
+}
+
+rgba rgba_with_string(rgba a, string s) {
+    return rgba_with_cstr(new(rgba), s->chars);
+}
+
+rgba rgba_mix(rgba a, rgba b, f32 f) {
+    return rgba(
+        r, a->r * (1.0f - f) + b->r * f,
+        g, a->g * (1.0f - f) + b->g * f,
+        b, a->r * (1.0f - f) + b->b * f,
+        a, a->r * (1.0f - f) + b->a * f);
+}
+
+define_class(rgba, A)
+
 vec2f rect_xy(rect a) { return vec2f(a->x, a->y); }
 
 rect rect_from_plots(vec2f v0, vec2f v1) {
@@ -510,17 +592,17 @@ define_vector(vec2f, f32, 2)
 define_struct(mat4f, f32)
 define_vector(mat4f, f32, 16)
 
-define_class(rect)
+define_class(rect, A)
 
-define_meta(vector_rgbf,  vector, rgbf)
-define_meta(vector_rgb8,  vector, rgb8)
-define_meta(vector_rgbaf, vector, rgbaf)
-define_meta(vector_rgba8, vector, rgba8)
-define_meta(vector_i8,    vector, i8)
-define_meta(vector_i64,   vector, i64)
-define_meta(vector_f32,   vector, f32)
-define_meta(vector_f64,   vector, f64)
+define_class(vector_rgbf,  vector, rgbf)
+define_class(vector_rgb8,  vector, rgb8)
+define_class(vector_rgbaf, vector, rgbaf)
+define_class(vector_rgba8, vector, rgba8)
+define_class(vector_i8,    vector, i8)
+define_class(vector_i64,   vector, i64)
+define_class(vector_f32,   vector, f32)
+define_class(vector_f64,   vector, f64)
 
 /// vector class works with structs in meta
-define_meta(vector_mat4f,      vector, mat4f)
+define_class(vector_mat4f,      vector, mat4f)
 
