@@ -165,7 +165,7 @@ rgba rgba_with_cstr(rgba a, cstr v) {
 }
 
 rgba rgba_with_string(rgba a, string s) {
-    return rgba_with_cstr(new(rgba), s->chars);
+    return rgba_with_cstr(a, s->chars);
 }
 
 rgba rgba_mix(rgba a, rgba b, f32 f) {
